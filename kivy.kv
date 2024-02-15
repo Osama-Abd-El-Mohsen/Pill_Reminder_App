@@ -5,16 +5,7 @@ MDBoxLayout:
     orientation: 'vertical'
     md_bg_color: self.theme_cls.backgroundColor
 
-    MDIconButton:
-        style:"standard"
-        theme_text_color:"Custom"
-        icon:"palette"
-        id:"ColorID"
-        opacity:0.0
-        disabled:True
-        pos_hint:{"top": .1}
-        size_hint: 0, 0
-        elevation:0
+
     MDTopAppBar:
         elevation:1
         type: "small"
@@ -23,17 +14,14 @@ MDBoxLayout:
                 icon: "theme-light-dark"
                 on_release: app.switch_theme_style()
 
-
         MDTopAppBarTitle:
             text: "Remind Me App"
             font_style: "Headline"
             role: "large"
             bold:True
-
             pos_hint: {"center_x": .5}
 
         MDTopAppBarTrailingButtonContainer:
-
             MDActionTopAppBarButton:
                 icon: "account-circle-outline"
                 on_release: app.info_dialog()
@@ -45,8 +33,6 @@ MDBoxLayout:
             MDList:
                 id:list
 
-                
-        
     MDBottomAppBar:
         id : btnbar
         elevation:1

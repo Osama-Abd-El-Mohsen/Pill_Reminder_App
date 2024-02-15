@@ -1,3 +1,5 @@
+import time
+from kivymd.utils.set_bars_colors import set_bars_colors
 from kivy.storage.jsonstore import JsonStore
 from datetime import datetime
 from kivymd.uix.list import *
@@ -25,19 +27,18 @@ from kivymd.uix.dialog import (
 )
 from kivymd.uix.button import MDButton, MDButtonText, MDIconButton
 from kivy.uix.widget import Widget
-from kivymd.tools.hotreload.app import MDApp
+# from kivymd.tools.hotreload.app import MDApp
 from kivy import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.config import Config
 Config.set('kivy', 'keyboard_mode', 'systemanddock')
-# from kivymd.app import MDApp
-from kivymd.utils.set_bars_colors import set_bars_colors
+from kivymd.app import MDApp
 
 
 class MainApp(MDApp):
-    DEBUG = True
 ####################### Helper Functions ############################
+
     def arabic_font(self, text):
         reshaped_text = arabic_reshaper.reshape(text)
         bidi_text = bidi.algorithm.get_display(reshaped_text)
@@ -46,14 +47,14 @@ class MainApp(MDApp):
     def switch_theme_style(self):
         self.theme_cls.primary_palette = (self.theme_cls.primary_palette)
         self.style_state = "Dark" if self.theme_cls.theme_style == "Light" else "Light"
-        self.theme_cls.theme_style = (self.style_state )
+        self.theme_cls.theme_style = (self.style_state)
         self.set_bars_colors()
-    
+
 ####################### Helper Functions ############################
 
 ####################### Build App Function ############################
-    def build_app(self):
-        self.style_state="Dark"
+    def build(self):
+        self.style_state = "Dark"
         self.set_bars_colors()
         now = datetime.now()
         self.tempH = str(now.hour)
@@ -70,10 +71,11 @@ class MainApp(MDApp):
         self.medical_name = None
         self.my_global_medical_list = []
         self.stored_data = JsonStore('data.json')
-        try :
+        try:
             self.style_state = self.stored_data.get('style')[
-                    'List2']
-        except : self.style_state="Dark"
+                'List2']
+        except:
+            self.style_state = "Dark"
         self.theme_cls.theme_style_switch_animation = True
         self.theme_cls.theme_style_switch_animation_duration = 0.5
         self.theme_cls.theme_style = self.style_state
@@ -93,7 +95,7 @@ class MainApp(MDApp):
 
             permissions = [Permission.READ_EXTERNAL_STORAGE]
             request_permissions(permissions, callback)
-            
+
         try:
             self.my_global_medical_list = self.stored_data.get('stored_medicals')[
                 'List']
@@ -151,14 +153,17 @@ class MainApp(MDApp):
                                 on_press=self.Delete_Medicine,
                             ),
                             style="elevated",
-                            padding=(10, 10, 10, 10),
-                            size_hint=(1, None),
+                            size_hint=(.5, None),
                             ripple_behavior=False,
                             theme_shadow_softness="Custom",
                             shadow_softness=15,
                             theme_elevation_level="Custom",
                             elevation_level=2,
                             spacing="10dp",
+                            size=(1, 100),
+                            padding=(10, 10, 10, 10),
+
+
                         )))
         except:
             self.id = 0
@@ -168,12 +173,12 @@ class MainApp(MDApp):
             'stored_medicals', List=self.my_global_medical_list)
         self.stored_data.put(
             'style', List2=self.style_state)
-        
+
     def set_bars_colors(self,):
         set_bars_colors(
-            self.theme_cls.primaryColor,  
-            self.theme_cls.primaryColor,  
-            self.style_state
+            self.theme_cls.backgroundColor,
+            self.theme_cls.backgroundColor,
+            "Light" if self.style_state == "Dark" else "Light"
         )
         print("="*20)
         print(self.style_state)
@@ -182,6 +187,7 @@ class MainApp(MDApp):
 
 
 ####################### Info Dialog ############################
+
     def info_dialog(self):
         self.InfoDialog = MDDialog(
             MDDialogIcon(
@@ -249,6 +255,7 @@ class MainApp(MDApp):
 
 
 ####################### medicine_info_dialog ############################
+
     def medicine_info_dialog(self):
 
         self.dia2 = MDDialog(
@@ -328,6 +335,13 @@ class MainApp(MDApp):
 
     def add_medicine(self):
         my_med_dict = {}
+        now = datetime.now()
+        self.tempH = str(now.hour)
+        self.tempM = str(now.minute)
+        self.tempD = str(now.day)
+        self.tempY = str(now.year)
+        self.tempMO = str(now.month)
+        self.tempAm_Pm = "am" if now.hour < 12 else "pm"
         self.KV.ids.list.add_widget(
             MDList(
                 MDCard(
@@ -382,14 +396,16 @@ class MainApp(MDApp):
                     ),
                     id=f"CardNum{self.id}",
                     style="elevated",
-                    padding=(10, 10, 10, 10),
-                    size_hint=(1, None),
+                    size_hint=(.5, None),
                     ripple_behavior=False,
                     theme_shadow_softness="Custom",
                     shadow_softness=15,
                     theme_elevation_level="Custom",
                     elevation_level=2,
                     spacing="10dp",
+                    size=(1, 100),
+                    padding=(10, 10, 10, 10),
+
                 ))
         )
         print(self.id)
@@ -463,6 +479,7 @@ class MainApp(MDApp):
 
 
 ####################### Timer Picker ############################
+
     def show_time_picker(self, instance):
         self.time_picker = MDTimePickerDialVertical()
         self.time_picker.headline_text = instance.id
@@ -497,7 +514,7 @@ class MainApp(MDApp):
         self.tempH = instance.hour
         self.tempM = instance.minute
         self.time = instance.time
-        
+
         if len(self.my_global_medical_list) != 0:
             for med in self.my_global_medical_list:
                 if med["Id"] == int(instance.headline_text):
@@ -511,6 +528,7 @@ class MainApp(MDApp):
 
 
 ####################### Date  Picker ############################
+
     def show_date_picker(self, instance):
         self.date_dialog = MDModalDatePicker()
         self.date_dialog.headline_text = instance.id
@@ -525,7 +543,8 @@ class MainApp(MDApp):
                     self.date_dialog.sel_day = new_date.day
                     self.date_dialog.sel_month = new_date.month
                     self.date_dialog.sel_year = new_date.year
-                    self.date_dialog.update_calendar(new_date.year, new_date.month)
+                    self.date_dialog.update_calendar(
+                        new_date.year, new_date.month)
                     break
                 else:
                     self.date_dialog.sel_day = int(self.tempD)
