@@ -1,3 +1,4 @@
+from kivymd.app import MDApp
 import time
 from kivymd.utils.set_bars_colors import set_bars_colors
 from kivy.storage.jsonstore import JsonStore
@@ -33,12 +34,9 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.config import Config
 Config.set('kivy', 'keyboard_mode', 'systemanddock')
-from kivymd.app import MDApp
-
-
 class MainApp(MDApp):
-####################### Helper Functions ############################
 
+    ####################### Helper Functions ############################
     def arabic_font(self, text):
         reshaped_text = arabic_reshaper.reshape(text)
         bidi_text = bidi.algorithm.get_display(reshaped_text)
@@ -48,14 +46,24 @@ class MainApp(MDApp):
         self.theme_cls.primary_palette = (self.theme_cls.primary_palette)
         self.style_state = "Dark" if self.theme_cls.theme_style == "Light" else "Light"
         self.theme_cls.theme_style = (self.style_state)
-        self.set_bars_colors()
+        self.save()
 
+        self.set_bars_colors()
 ####################### Helper Functions ############################
 
 ####################### Build App Function ############################
-    def build(self):
-        self.style_state = "Dark"
-        self.set_bars_colors()
+    def __init__(self, **kwargs):
+        super(MainApp, self).__init__(**kwargs)
+        self.stored_data = JsonStore('data.json')
+        Clock.schedule_once(lambda *args: self.load())
+
+    def load(self):
+        try:
+            self.style_state = self.stored_data.get('style')[
+                'List2']
+        except:
+            self.style_state = "Dark"
+
         now = datetime.now()
         self.tempH = str(now.hour)
         self.tempM = str(now.minute)
@@ -67,45 +75,35 @@ class MainApp(MDApp):
         self.time = None
         self.date = None
         self.color = None
-        self.ids_List = []
         self.medical_name = None
         self.my_global_medical_list = []
-        self.stored_data = JsonStore('data.json')
+        self.set_bars_colors()
+
         try:
             self.style_state = self.stored_data.get('style')[
                 'List2']
+            print("="*20)
+            print("get data from json")
+            print("="*20)
         except:
             self.style_state = "Dark"
-        self.theme_cls.theme_style_switch_animation = True
-        self.theme_cls.theme_style_switch_animation_duration = 0.5
-        self.theme_cls.theme_style = self.style_state
-        self.theme_cls.primary_palette = "Aliceblue"
-        self.KV = Builder.load_file("kivy.kv")
-        return self.KV
-####################### Build App Function ############################
-
-####################### Events Function ############################
-    def on_start(self):
-        def callback(permission, results):
-            if all([res for res in results]):
-                Clock.schedule_once(self.set_dynamic_color)
-        super().on_start()
-        if platform == "android":
-            from android.permissions import Permission, request_permissions
-
-            permissions = [Permission.READ_EXTERNAL_STORAGE]
-            request_permissions(permissions, callback)
 
         try:
             self.my_global_medical_list = self.stored_data.get('stored_medicals')[
                 'List']
+            print("="*20)
+            print("Data Loaded")
+            print("="*20)
+            print(self.my_global_medical_list)
+            print("="*20)
             self.id = (self.my_global_medical_list[-1]["Id"]+1)
             for (med) in self.my_global_medical_list:
-                self.KV.ids.list.add_widget(
+                x= self.KV.ids.list.add_widget(
                     MDList(
                         MDCard(
                             MDTextField(
                                 MDTextFieldHintText(
+                                    id = str(med["Id"]),
                                     text="medicament name",
                                     halign="left",
                                 ),
@@ -114,7 +112,7 @@ class MainApp(MDApp):
                                 line_color_normal=(0, 1, 0, 0),
                                 text=med["Name"],
                                 width="240dp",
-                                id="cardLabel",
+                                id = str(med["Id"]),
                                 mode="outlined",
                                 role="medium",
                                 font_style="Headline",
@@ -153,6 +151,7 @@ class MainApp(MDApp):
                                 on_press=self.Delete_Medicine,
                             ),
                             style="elevated",
+                            id=str(med["Id"]),
                             size_hint=(.5, None),
                             ripple_behavior=False,
                             theme_shadow_softness="Custom",
@@ -160,25 +159,65 @@ class MainApp(MDApp):
                             theme_elevation_level="Custom",
                             elevation_level=2,
                             spacing="10dp",
-                            size=(1, 100),
+                            size=(1, 150),
                             padding=(10, 10, 10, 10),
-
-
                         )))
+                self.KV.ids.list.get_ids()[str(med["Id"])].children[-1].bind(text=self.on_focus)
         except:
             self.id = 0
 
-    def on_stop(self):
+    def save(self):
         self.stored_data.put(
             'stored_medicals', List=self.my_global_medical_list)
         self.stored_data.put(
             'style', List2=self.style_state)
 
+    def build(self):
+        try:
+            self.style_state = self.stored_data.get('style')[
+                'List2']
+        except:
+            self.style_state = "Dark"
+        self.theme_cls.theme_style_switch_animation = True
+        self.theme_cls.theme_style_switch_animation_duration = 0.5
+        self.theme_cls.theme_style = self.style_state
+        self.theme_cls.primary_palette = "Aliceblue"
+        self.KV = Builder.load_file("kivy.kv")
+        return self.KV
+####################### Build App Function ############################
+
+    def on_focus(self, instance, text):
+        x = instance.get_ids().keys()
+        temp_id = instance.children[0].id
+        for (x, med) in enumerate(self.my_global_medical_list):
+            if med["Id"] == int(temp_id):
+                self.my_global_medical_list[x]['Name'] = text
+                print("="*20)
+                print("Data Changed")
+                print(med)
+                self.save()
+                print("="*20)
+                break
+
+        # print(instance.get_ids()[-4])
+####################### Events Function ############################
+
+    def on_start(self):
+        def callback(permission, results):
+            if all([res for res in results]):
+                Clock.schedule_once(self.set_dynamic_color)
+        super().on_start()
+        if platform == "android":
+            from android.permissions import Permission, request_permissions
+
+            permissions = [Permission.READ_EXTERNAL_STORAGE]
+            request_permissions(permissions, callback)
+
     def set_bars_colors(self,):
         set_bars_colors(
             self.theme_cls.backgroundColor,
             self.theme_cls.backgroundColor,
-            "Light" if self.style_state == "Dark" else "Light"
+            "Light" if self.style_state == "Light" else "Dark"
         )
         print("="*20)
         print(self.style_state)
@@ -187,7 +226,6 @@ class MainApp(MDApp):
 
 
 ####################### Info Dialog ############################
-
     def info_dialog(self):
         self.InfoDialog = MDDialog(
             MDDialogIcon(
@@ -255,7 +293,6 @@ class MainApp(MDApp):
 
 
 ####################### medicine_info_dialog ############################
-
     def medicine_info_dialog(self):
 
         self.dia2 = MDDialog(
@@ -326,10 +363,6 @@ class MainApp(MDApp):
         self.medical_name = None
         self.medical_name = self.dia2.get_ids()["medical_name"].text
         if self.time != None and self.medical_name != "" and self.date != None and self.color != None:
-            print(f"Medical name: {self.medical_name}")
-            print(f"Date: {self.date}")
-            print(f"Time: {self.time}")
-
             self.dia2.dismiss()
             self.add_medicine()
 
@@ -342,11 +375,13 @@ class MainApp(MDApp):
         self.tempY = str(now.year)
         self.tempMO = str(now.month)
         self.tempAm_Pm = "am" if now.hour < 12 else "pm"
+        print(f"id for next card = {self.id}")
         self.KV.ids.list.add_widget(
             MDList(
                 MDCard(
                     MDTextField(
                         MDTextFieldHintText(
+                            id=str(self.id),
                             text="medicament name",
                             halign="left",
                         ),
@@ -355,14 +390,15 @@ class MainApp(MDApp):
                         line_color_normal=(0, 1, 0, 0),
                         text=self.dia2.get_ids()["medical_name"].text,
                         width="240dp",
-                        id="cardLabel",
                         mode="outlined",
                         role="medium",
                         font_style="Headline",
                         halign="left",
                         bold=True,
                         padding=(10, 0, 0, 0),
-                        required=True
+                        required=True,
+                        id=f"{self.id}",
+
                     ),
                     MDIconButton(
                         style="standard",
@@ -403,13 +439,22 @@ class MainApp(MDApp):
                     theme_elevation_level="Custom",
                     elevation_level=2,
                     spacing="10dp",
-                    size=(1, 100),
+                    size=(1, 150),
                     padding=(10, 10, 10, 10),
 
                 ))
         )
+        print("="*20)
+        ax = f"CardNum{self.id}"
+        print(ax)
+        print(self.KV.ids.list.get_ids())
+        print("="*20)
+        print(self.KV.ids.list.get_ids()[ax].children[-1])
+        self.KV.ids.list.get_ids()[ax].children[-1].bind(text=self.on_focus)
+
+        print("="*20)
         print(self.id)
-        self.ids_List.append(self.id)
+
         if self.time != None and self.date != None and type(self.date) != str and type(self.time) != str:
             self.time = self.time.strftime('%H:%M:%S')
             self.date = self.date.strftime('%Y-%m-%d')
@@ -421,25 +466,34 @@ class MainApp(MDApp):
         my_med_dict["Color"] = self.color
 
         self.my_global_medical_list.append(my_med_dict)
-
+        self.save()
+        print("="*20)
+        print("Saved data = ")
         print(self.my_global_medical_list)
+        print("="*20)
 
         self.time = None
         self.date = None
         self.medical_name = None
         self.color = None
-        self.id += 1
+        self.id = self.my_global_medical_list[-1]["Id"] + 1
 
     def Delete_Medicine(self, instance=None):
         if instance:
             self.KV.ids.list.remove_widget(instance.parent.parent)
             for med in self.my_global_medical_list:
                 if med["Id"] == int(instance.id):
+                    print("="*20)
+                    print("data Deleted")
                     print(med)
                     self.my_global_medical_list.remove(med)
+                    self.save()
+                    print("="*20)
                     break
-
-            self.id -= 1
+            try :
+                self.id = self.my_global_medical_list[-1]["Id"]+1
+            except : self.id =0
+            print(f"deleted id and self.id =  {self.id}")
 
     def open_menu(self, instance=None):
         self.menu_items = [
@@ -470,11 +524,11 @@ class MainApp(MDApp):
         for med in self.my_global_medical_list:
             if med["Id"] == int(instance.id):
                 med["Color"] = text_item
+                self.save()
                 break
 
         self.color = text_item
         self.menu.dismiss()
-
 ####################### medicine_info_dialog ############################
 
 
@@ -488,10 +542,11 @@ class MainApp(MDApp):
 
         if len(self.my_global_medical_list) != 0:
             for med in self.my_global_medical_list:
-                print(med)
                 if med["Id"] == int(self.time_picker.headline_text):
                     if med["Time"] == "None":
                         med["Time"] = "00:00:00"
+                        print("time temp 00:00:00 saved")
+                        self.save()
                     else:
                         med["Time"] = med["Time"]
                     new_hour = datetime.strptime(med["Time"], "%H:%M:%S")
@@ -519,6 +574,10 @@ class MainApp(MDApp):
             for med in self.my_global_medical_list:
                 if med["Id"] == int(instance.headline_text):
                     med["Time"] = str(instance.time)
+                    self.save()
+                    print("="*20)
+                    print(f"time {str(instance.time)} saved")
+                    print("="*20)
                     break
                 else:
                     self.time = instance.time
@@ -573,6 +632,10 @@ class MainApp(MDApp):
         for med in self.my_global_medical_list:
             if med["Id"] == int(instance.headline_text):
                 med["Date"] = str(instance.get_date()[0])
+                self.save()
+                print("="*20)
+                print(f"time {str(instance.get_date()[0])} saved")
+                print("="*20)
                 break
         instance.dismiss()
         if self.date != None:
