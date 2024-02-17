@@ -34,6 +34,8 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.config import Config
 Config.set('kivy', 'keyboard_mode', 'systemanddock')
+
+
 class MainApp(MDApp):
 
     ####################### Helper Functions ############################
@@ -58,6 +60,7 @@ class MainApp(MDApp):
         Clock.schedule_once(lambda *args: self.load())
 
     def load(self):
+        self.icon_instance =""
         try:
             self.style_state = self.stored_data.get('style')[
                 'List2']
@@ -77,6 +80,7 @@ class MainApp(MDApp):
         self.color = None
         self.medical_name = None
         self.my_global_medical_list = []
+        self.theme_cls.theme_style = self.style_state
         self.set_bars_colors()
 
         try:
@@ -98,12 +102,12 @@ class MainApp(MDApp):
             print("="*20)
             self.id = (self.my_global_medical_list[-1]["Id"]+1)
             for (med) in self.my_global_medical_list:
-                x= self.KV.ids.list.add_widget(
+                x = self.KV.ids.list.add_widget(
                     MDList(
                         MDCard(
                             MDTextField(
                                 MDTextFieldHintText(
-                                    id = str(med["Id"]),
+                                    id=str(med["Id"]),
                                     text="medicament name",
                                     halign="left",
                                 ),
@@ -112,7 +116,7 @@ class MainApp(MDApp):
                                 line_color_normal=(0, 1, 0, 0),
                                 text=med["Name"],
                                 width="240dp",
-                                id = str(med["Id"]),
+                                id=str(med["Id"]),
                                 mode="outlined",
                                 role="medium",
                                 font_style="Headline",
@@ -159,10 +163,11 @@ class MainApp(MDApp):
                             theme_elevation_level="Custom",
                             elevation_level=2,
                             spacing="10dp",
-                            size=(1, 150),
+                            size=(1, 250),
                             padding=(10, 10, 10, 10),
                         )))
-                self.KV.ids.list.get_ids()[str(med["Id"])].children[-1].bind(text=self.on_focus)
+                self.KV.ids.list.get_ids()[str(
+                    med["Id"])].children[-1].bind(text=self.on_focus)
         except:
             self.id = 0
 
@@ -213,7 +218,7 @@ class MainApp(MDApp):
             permissions = [Permission.READ_EXTERNAL_STORAGE]
             request_permissions(permissions, callback)
 
-    def set_bars_colors(self,):
+    def set_bars_colors(self):
         set_bars_colors(
             self.theme_cls.backgroundColor,
             self.theme_cls.backgroundColor,
@@ -226,6 +231,7 @@ class MainApp(MDApp):
 
 
 ####################### Info Dialog ############################
+
     def info_dialog(self):
         self.InfoDialog = MDDialog(
             MDDialogIcon(
@@ -293,8 +299,9 @@ class MainApp(MDApp):
 
 
 ####################### medicine_info_dialog ############################
-    def medicine_info_dialog(self):
 
+    def medicine_info_dialog(self):
+        self.icon_instance=""
         self.dia2 = MDDialog(
             MDDialogIcon(
                 icon="plus",
@@ -307,16 +314,18 @@ class MainApp(MDApp):
             ),
 
             MDDialogContentContainer(
-
                 MDTextField(
                     MDTextFieldHintText(
                         text="medicament name",
                         halign="left",
                     ),
+                    MDTextFieldHelperText(
+                        text="Enter pill Name"),
+                    theme_line_color="Custom",
+
                     id="medical_name",
                     mode="outlined",
                 ),
-                MDDivider(),
                 id="con",
                 orientation="vertical",
 
@@ -324,46 +333,140 @@ class MainApp(MDApp):
 
             MDDialogButtonContainer(
                 Widget(),
-
-                MDIconButton(
-                    style="standard",
-                    theme_text_color="Custom",
-                    icon="palette",
-                    id=f"{self.id}",
-                    opacity=1.0,
-                    disabled=False,
-                    on_press=self.open_menu
-
-                ),
-                MDIconButton(
-                    style="standard",
-                    icon="clock",
-                    id=f"{self.id}",
-                    on_press=self.show_time_picker
-                ),
-                MDIconButton(
-                    style="standard",
-                    id=f"{self.id}",
-                    icon="calendar",
-                    on_press=self.show_date_picker
-                ),
                 MDButton(
-                    MDButtonText(text="Add",
-                                 font_style="Title", role='medium'),
+                    MDButtonText(
+                        text="Next",
+                        font_style="Title", role='medium'),
                     style="tonal",
-                    on_press=self.Dialog_OK
+                    on_press=self.Next_1
                 ),
                 spacing="10dp",
-
             ))
-
         self.dia2.open()
 
-    def Dialog_OK(self, *arg):
+    def Next_1(self, instance):
+        self.menu_items = [
+            {"text": "White", "on_release": lambda x=f"ffffff": menu_callback_add(
+                x)},
+            {"text": "Blue", "on_release": lambda x=f"A6E0FF": menu_callback_add(
+                x)},
+            {"text": "Red", "on_release": lambda x=f"FF5C77": menu_callback_add(
+                x)},
+            {"text": "Pink", "on_release": lambda x=f"FFAFED": menu_callback_add(
+                x)},
+            {"text": "Green", "on_release": lambda x=f"BDE986": menu_callback_add(
+                x)},
+            {"text": "Yellow", "on_release": lambda x=f"FFF3B8": menu_callback_add(
+                x)},
+            {"text": "Orange", "on_release": lambda x=f"FFB300": menu_callback_add(
+                x)},
+        ]
+        
+        self.menu = MDDropdownMenu(
+            id="droplist",
+            caller=instance,
+            items=self.menu_items)
+        
+        def open_menu(icon_instance):
+            self.icon_instance = icon_instance
+            self.menu.open()
+
+        def menu_callback_add( text_item):
+            self.icon_instance.text_color = text_item
+            self.color = text_item
+            self.menu.dismiss()
+
+        if instance.parent.get_ids()['medical_name'].text != "":
+            self.dia2.dismiss()
+            self.dia1 = MDDialog(
+                MDDialogIcon(
+                    icon="plus",
+                ),
+                MDDialogHeadlineText(
+                    text="Remind Me With",
+                    font_style="Title",
+                    role='medium',
+                    bold=True
+                ),
+                MDDialogButtonContainer(
+                    Widget(),
+                    MDIconButton(
+                        style="standard",
+                        theme_text_color="Custom",
+                        icon="palette",
+                        id=f"{self.id}",
+                        opacity=1.0,
+                        disabled=False,
+                        on_press=open_menu
+                    ),
+                    MDButton(
+                        MDButtonText(
+                            text="Next",
+                            font_style="Title", role='medium'),
+                        style="tonal",
+                        on_press=self.Next_2
+                    ),
+                    spacing="10dp",
+                ))
+            self.dia1.open()
+
+        else:
+            instance.theme_bg_color = "Custom"
+            instance.md_bg_color = "FF5C77"
+            instance.parent.get_ids(
+            )['medical_name'].children[0].text = "Pill  Name Is Empty "
+            instance.parent.get_ids(
+            )['medical_name'].line_color_normal = "FF5C77"
+
+    def Next_2(self, instance):   
+        try:
+            instance.dismiss()
+        except :
+            try :
+                if self.icon_instance.text_color != "":
+                    self.dia1.dismiss()
+                    now = datetime.now()
+                    self.time_picker = MDTimePickerDialVertical()
+                    self.time_picker.hour = str(now.hour)
+                    self.time_picker.minute = str(now.minute)
+
+                    self.time_picker.bind(on_ok=self.Next_3)
+                    self.time_picker.bind(on_cancel=self.cancel)
+                    self.time_picker.open()
+                else :
+                    print(instance)
+                    instance.theme_bg_color = "Custom"
+                    instance.md_bg_color = "FF5C77"
+            except :
+                    instance.theme_bg_color = "Custom"
+                    instance.md_bg_color = "FF5C77"
+
+    def Next_3(self, instance):
+        self.time = instance.time
+        instance.dismiss()
+        now = datetime.now()
+        self.date_picker = MDModalDatePicker()
+        self.date_picker.bind(on_ok=self.Dialog_OK)
+        self.date_picker.bind(on_cancel=self.cancel)
+        print(str(now.date()))
+        new_date = datetime.strptime(str(now.date()), "%Y-%m-%d")
+        self.date_picker.sel_day = new_date.day
+        self.date_picker.sel_month = new_date.month
+        self.date_picker.sel_year = new_date.year
+        self.date_picker.update_calendar(
+            new_date.year, new_date.month)
+
+        self.date_picker.open()
+
+    def cancel(self,instance):
+        instance.dismiss()
+
+    def Dialog_OK(self, instance):
+        self.date = instance.get_date()[0]
         self.medical_name = None
         self.medical_name = self.dia2.get_ids()["medical_name"].text
         if self.time != None and self.medical_name != "" and self.date != None and self.color != None:
-            self.dia2.dismiss()
+            instance.dismiss()
             self.add_medicine()
 
     def add_medicine(self):
@@ -439,7 +542,7 @@ class MainApp(MDApp):
                     theme_elevation_level="Custom",
                     elevation_level=2,
                     spacing="10dp",
-                    size=(1, 150),
+                    size=(1, 250),
                     padding=(10, 10, 10, 10),
 
                 ))
@@ -490,27 +593,28 @@ class MainApp(MDApp):
                     self.save()
                     print("="*20)
                     break
-            try :
+            try:
                 self.id = self.my_global_medical_list[-1]["Id"]+1
-            except : self.id =0
+            except:
+                self.id = 0
             print(f"deleted id and self.id =  {self.id}")
 
     def open_menu(self, instance=None):
         self.menu_items = [
             {"text": "White", "on_release": lambda x=f"ffffff": self.menu_callback(
-                x, instance), "md_bg_color": "ffffff"},
+                x, instance)},
             {"text": "Blue", "on_release": lambda x=f"A6E0FF": self.menu_callback(
-                x, instance), "md_bg_color": "A6E0FF"},
+                x, instance)},
             {"text": "Red", "on_release": lambda x=f"FF5C77": self.menu_callback(
-                x, instance), "md_bg_color": "FF5C77"},
+                x, instance)},
             {"text": "Pink", "on_release": lambda x=f"FFAFED": self.menu_callback(
-                x, instance), "md_bg_color": "FFAFED"},
+                x, instance)},
             {"text": "Green", "on_release": lambda x=f"BDE986": self.menu_callback(
-                x, instance), "md_bg_color": "BDE986"},
+                x, instance)},
             {"text": "Yellow", "on_release": lambda x=f"FFF3B8": self.menu_callback(
-                x, instance), "md_bg_color": "FFF3B8"},
+                x, instance)},
             {"text": "Orange", "on_release": lambda x=f"FFB300": self.menu_callback(
-                x, instance), "md_bg_color": "FFB300"},
+                x, instance)},
         ]
         if instance:
             self.menu = MDDropdownMenu(
@@ -533,6 +637,7 @@ class MainApp(MDApp):
 
 
 ####################### Timer Picker ############################
+
 
     def show_time_picker(self, instance):
         self.time_picker = MDTimePickerDialVertical()
@@ -587,6 +692,7 @@ class MainApp(MDApp):
 
 
 ####################### Date  Picker ############################
+
 
     def show_date_picker(self, instance):
         self.date_dialog = MDModalDatePicker()

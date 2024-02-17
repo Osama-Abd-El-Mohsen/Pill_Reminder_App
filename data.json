@@ -1,1 +1,1 @@
-{"stored_medicals": {"List": []}, "style": {"List2": "Dark"}}
+{"stored_medicals": {"List": [{"Id": 2, "Name": "Med0", "Time": "13:46:00", "Date": "2024-02-01", "Color": "A6E0FF"}, {"Id": 3, "Name": "Med1", "Time": "14:46:00", "Date": "2024-02-02", "Color": "FF5C77"}, {"Id": 4, "Name": "Med2", "Time": "03:46:00", "Date": "2024-02-03", "Color": "FFAFED"}]}, "style": {"List2": "Dark"}}
