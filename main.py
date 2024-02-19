@@ -1,3 +1,4 @@
+from plyer import notification
 from kivymd.app import MDApp
 import time
 from kivymd.utils.set_bars_colors import set_bars_colors
@@ -33,12 +34,35 @@ from kivy import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.config import Config
-Config.set('kivy', 'keyboard_mode', 'systemanddock')
+# Config.set('kivy', 'keyboard_mode', 'systemanddock')
+from kivy.core.audio import SoundLoader
 
 
 class MainApp(MDApp):
 
+    def check_medical_appointments(self, *args):
+        print("iam in")
+        now = datetime.now()
+        current_time = now.replace(second=0).strftime("%H:%M:%S")
+        current_date = now.strftime("%Y-%m-%d")
+        for med in self.my_global_medical_list:
+            if med["Time"] == current_time and med["Date"] == current_date :
+                notification.notify(
+                    title="Medication Reminder",
+                    message=f"Don't forget to take your {med['Name']}!",
+                    # app_icon=None, 
+                    timeout=5, 
+                    # toast=False,  
+                )
+                print("notification sent")
+                sound = SoundLoader.load('alarm.wav')
+                if sound:
+                    print(f"Sound found at {sound.source}")
+                    print(f"Sound length at {sound.length}")
+                    sound.play()
+
     ####################### Helper Functions ############################
+
     def arabic_font(self, text):
         reshaped_text = arabic_reshaper.reshape(text)
         bidi_text = bidi.algorithm.get_display(reshaped_text)
@@ -58,7 +82,7 @@ class MainApp(MDApp):
         super(MainApp, self).__init__(**kwargs)
         self.stored_data = JsonStore('data.json')
         Clock.schedule_once(lambda *args: self.load())
-
+        
     def load(self):
         self.icon_instance =""
         try:
@@ -208,6 +232,8 @@ class MainApp(MDApp):
 ####################### Events Function ############################
 
     def on_start(self):
+        Clock.schedule_interval(self.check_medical_appointments, 60)
+
         def callback(permission, results):
             if all([res for res in results]):
                 Clock.schedule_once(self.set_dynamic_color)
@@ -224,9 +250,7 @@ class MainApp(MDApp):
             self.theme_cls.backgroundColor,
             "Light" if self.style_state == "Light" else "Dark"
         )
-        print("="*20)
-        print(self.style_state)
-        print("="*20)
+
 ####################### Events Function ############################
 
 
@@ -275,6 +299,12 @@ class MainApp(MDApp):
 
             MDDialogButtonContainer(
                 Widget(),
+                MDIconButton(
+                        style="standard",
+                        theme_text_color="Custom",
+                        icon="bug",
+                        on_press=self.bug_report_link
+                    ),
                 MDButton(
                     MDButtonText(text="Ok"),
                     style="text",
@@ -295,13 +325,16 @@ class MainApp(MDApp):
 
     def info_email_link(self, *arg):
         webbrowser.open("mailto:Osama.m.abdelmohsen@gmail.com")
+
+    def bug_report_link(self, *arg):
+        webbrowser.open("https://forms.gle/kcvaGvwxjow2mRS37")
 ####################### Info Dialog ############################
 
 
 ####################### medicine_info_dialog ############################
 
     def medicine_info_dialog(self):
-        self.icon_instance=""
+        self.icon_instance = ""
         self.dia2 = MDDialog(
             MDDialogIcon(
                 icon="plus",
@@ -361,17 +394,17 @@ class MainApp(MDApp):
             {"text": "Orange", "on_release": lambda x=f"FFB300": menu_callback_add(
                 x)},
         ]
-        
+
         self.menu = MDDropdownMenu(
             id="droplist",
             caller=instance,
             items=self.menu_items)
-        
+
         def open_menu(icon_instance):
             self.icon_instance = icon_instance
             self.menu.open()
 
-        def menu_callback_add( text_item):
+        def menu_callback_add(text_item):
             self.icon_instance.text_color = text_item
             self.color = text_item
             self.menu.dismiss()
@@ -380,10 +413,10 @@ class MainApp(MDApp):
             self.dia2.dismiss()
             self.dia1 = MDDialog(
                 MDDialogIcon(
-                    icon="plus",
+                    icon="palette",
                 ),
                 MDDialogHeadlineText(
-                    text="Remind Me With",
+                    text="Chooce Bill Color",
                     font_style="Title",
                     role='medium',
                     bold=True
@@ -418,11 +451,11 @@ class MainApp(MDApp):
             instance.parent.get_ids(
             )['medical_name'].line_color_normal = "FF5C77"
 
-    def Next_2(self, instance):   
+    def Next_2(self, instance):
         try:
             instance.dismiss()
-        except :
-            try :
+        except:
+            try:
                 if self.icon_instance.text_color != "":
                     self.dia1.dismiss()
                     now = datetime.now()
@@ -433,13 +466,13 @@ class MainApp(MDApp):
                     self.time_picker.bind(on_ok=self.Next_3)
                     self.time_picker.bind(on_cancel=self.cancel)
                     self.time_picker.open()
-                else :
+                else:
                     print(instance)
                     instance.theme_bg_color = "Custom"
                     instance.md_bg_color = "FF5C77"
-            except :
-                    instance.theme_bg_color = "Custom"
-                    instance.md_bg_color = "FF5C77"
+            except:
+                instance.theme_bg_color = "Custom"
+                instance.md_bg_color = "FF5C77"
 
     def Next_3(self, instance):
         self.time = instance.time
@@ -458,7 +491,7 @@ class MainApp(MDApp):
 
         self.date_picker.open()
 
-    def cancel(self,instance):
+    def cancel(self, instance):
         instance.dismiss()
 
     def Dialog_OK(self, instance):
@@ -505,6 +538,16 @@ class MainApp(MDApp):
                     ),
                     MDIconButton(
                         style="standard",
+                        icon="palette",
+                        id=f"{self.id}",
+                        opacity=1.0,
+                        disabled=False,
+                        theme_text_color="Custom",
+                        text_color=self.color,
+                        on_press=self.open_menu
+                    ),
+                    MDIconButton(
+                        style="standard",
                         id=f"{self.id}",
                         icon="clock",
                         on_press=self.show_time_picker
@@ -514,16 +557,6 @@ class MainApp(MDApp):
                         icon="calendar",
                         id=f"{self.id}",
                         on_press=self.show_date_picker
-                    ),
-                    MDIconButton(
-                        style="standard",
-                        icon="palette",
-                        id=f"{self.id}",
-                        opacity=1.0,
-                        disabled=False,
-                        theme_text_color="Custom",
-                        text_color=self.color,
-                        on_press=self.open_menu
                     ),
                     MDIconButton(
                         id=f"{self.id}",
@@ -542,7 +575,7 @@ class MainApp(MDApp):
                     theme_elevation_level="Custom",
                     elevation_level=2,
                     spacing="10dp",
-                    size=(1, 250),
+                    size=(1, 350),
                     padding=(10, 10, 10, 10),
 
                 ))
@@ -569,6 +602,12 @@ class MainApp(MDApp):
         my_med_dict["Color"] = self.color
 
         self.my_global_medical_list.append(my_med_dict)
+        notification.notify(
+            title="Card Added ",
+            message=" card added successfully",
+            timeout=2
+        )
+
         self.save()
         print("="*20)
         print("Saved data = ")
@@ -637,8 +676,6 @@ class MainApp(MDApp):
 
 
 ####################### Timer Picker ############################
-
-
     def show_time_picker(self, instance):
         self.time_picker = MDTimePickerDialVertical()
         self.time_picker.headline_text = instance.id
@@ -692,8 +729,6 @@ class MainApp(MDApp):
 
 
 ####################### Date  Picker ############################
-
-
     def show_date_picker(self, instance):
         self.date_dialog = MDModalDatePicker()
         self.date_dialog.headline_text = instance.id
