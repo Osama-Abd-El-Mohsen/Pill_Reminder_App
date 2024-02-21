@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = RemindMe
+title = Bill Reminder
 
 # (str) Package name
 package.name = remindme
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.medical
+package.domain = org.bill
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -37,7 +37,7 @@ version = 3.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3, kivy==2.3.0, https://github.com/kivymd/KivyMD/archive/master.zip, materialyoucolor, exceptiongroup, asyncgui, asynckivy, Pillow,python-bidi,arabic_reshaper,plyer
+requirements = python3, kivy==2.3.0, https://github.com/kivymd/KivyMD/archive/master.zip, materialyoucolor, exceptiongroup, asyncgui, asynckivy, Pillow,python-bidi,arabic_reshaper,plyer,oscpy
 
 
 # (str) Custom source folders for requirements
@@ -56,7 +56,8 @@ orientation = portrait
 
 # (list) List of service to declare
 #services = NAME:ENTRYPOINT_TO_PY,NAME2:ENTRYPOINT2_TO_PY
-# services = Remindme:service.py
+services = Pong:service.py:foreground:sticky
+# services = Pong:service.py
 
 #
 # OSX Specific
@@ -97,7 +98,7 @@ fullscreen = 0
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
-android.permissions = INTERNET,READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,ACCESS_NETWORK_STATE
+android.permissions = INTERNET,READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,ACCESS_NETWORK_STATE,FOREGROUND_SERVICE
 #android.permissions = INTERNET,ACCESS_NETWORK_STATE,android.permission.INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,(name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=18) 
 
 # (list) features (adds uses-feature -tags to manifest)
@@ -139,7 +140,7 @@ android.api = 30
 # agreements. This is intended for automation only. If set to False,
 # the default, you will be shown the license when first running
 # buildozer.
-# android.accept_sdk_license = False
+android.accept_sdk_license = True
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity
@@ -339,7 +340,7 @@ p4a.local_recipes = ./p4a-recipes
 #p4a.hook =
 
 # (str) Bootstrap to use for android builds
-# p4a.bootstrap = sdl2
+p4a.bootstrap = sdl2
 
 # (int) port number to specify an explicit --port= p4a argument (eg for bootstrap flask)
 #p4a.port =

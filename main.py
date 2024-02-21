@@ -37,6 +37,8 @@ from kivy.config import Config
 # Config.set('kivy', 'keyboard_mode', 'systemanddock')
 from kivy.core.audio import SoundLoader
 
+from oscpy.client import OSCClient
+from oscpy.server import OSCThreadServer
 
 class MainApp(MDApp):
 
@@ -61,7 +63,7 @@ class MainApp(MDApp):
                     print(f"Sound length at {sound.length}")
                     sound.play()
 
-    ####################### Helper Functions ############################
+####################### Helper Functions ############################
 
     def arabic_font(self, text):
         reshaped_text = arabic_reshaper.reshape(text)
@@ -69,12 +71,22 @@ class MainApp(MDApp):
         return bidi_text
 
     def switch_theme_style(self):
-        self.theme_cls.primary_palette = (self.theme_cls.primary_palette)
         self.style_state = "Dark" if self.theme_cls.theme_style == "Light" else "Light"
-        self.theme_cls.theme_style = (self.style_state)
+        self.theme_cls.switch_theme()
+        self.theme_cls.update_theme_colors()
         self.save()
 
         self.set_bars_colors()
+
+    def andoid_start_service(name,other_arg):  
+        from android import mActivity  
+        from jnius import autoclass  
+        context = mActivity.getApplicationContext()  
+        service_name = "org.bill.remindme" + ".Service" + "Pong"  
+        service = autoclass(service_name)  
+        service.start(mActivity, '')  # starts or re-initializes a service  
+        return service
+
 ####################### Helper Functions ############################
 
 ####################### Build App Function ############################
@@ -105,6 +117,8 @@ class MainApp(MDApp):
         self.medical_name = None
         self.my_global_medical_list = []
         self.theme_cls.theme_style = self.style_state
+        
+        self.theme_cls.update_theme_colors()
         self.set_bars_colors()
 
         try:
@@ -202,6 +216,7 @@ class MainApp(MDApp):
             'style', List2=self.style_state)
 
     def build(self):
+
         try:
             self.style_state = self.stored_data.get('style')[
                 'List2']
@@ -214,6 +229,8 @@ class MainApp(MDApp):
         self.KV = Builder.load_file("kivy.kv")
         return self.KV
 ####################### Build App Function ############################
+    def display_message(self, message):
+        print("message")
 
     def on_focus(self, instance, text):
         x = instance.get_ids().keys()
@@ -238,17 +255,36 @@ class MainApp(MDApp):
             if all([res for res in results]):
                 Clock.schedule_once(self.set_dynamic_color)
         super().on_start()
+
         if platform == "android":
             from android.permissions import Permission, request_permissions
-
             permissions = [Permission.READ_EXTERNAL_STORAGE]
             request_permissions(permissions, callback)
+
+            self.service = self.andoid_start_service('Pong')
+            print(f'started android service. {self.service}')  
+
+        elif platform in ('linux', 'linux2', 'macos', 'win'):  
+                from runpy import run_path  
+                from threading import Thread  
+                self.service = Thread(  
+                    target=run_path,  
+                    args=['./service.py'],  
+                    kwargs={'run_name': '__main__'},  
+                    daemon=True  
+                )  
+                self.service.start()  
+        
+        else:  
+            raise NotImplementedError(  
+                "service start not implemented on this platform"  
+            )
 
     def set_bars_colors(self):
         set_bars_colors(
             self.theme_cls.backgroundColor,
             self.theme_cls.backgroundColor,
-            "Light" if self.style_state == "Light" else "Dark"
+            "Light" if self.style_state == "Dark" else "Light"
         )
 
 ####################### Events Function ############################
