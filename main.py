@@ -1,70 +1,35 @@
-from plyer import notification
 from kivymd.app import MDApp
-import time
 from kivymd.utils.set_bars_colors import set_bars_colors
 from kivy.storage.jsonstore import JsonStore
 from datetime import datetime
 from kivymd.uix.list import *
-from kivymd.uix.pickers import MDModalDatePicker
+from kivymd.uix.pickers import *
 from kivymd.uix.menu import *
 import arabic_reshaper
 import bidi.algorithm
 from kivymd.uix.textfield import *
-from kivymd.uix.pickers import MDTimePickerDialVertical
 from kivymd.uix.card import MDCard
 import webbrowser
-from kivymd.uix.list import (
-    MDListItem,
-    MDListItemLeadingIcon,
-    MDListItemSupportingText,
-)
 from kivymd.uix.divider import MDDivider
-from kivymd.uix.dialog import (
-    MDDialog,
-    MDDialogIcon,
-    MDDialogHeadlineText,
-    MDDialogSupportingText,
-    MDDialogButtonContainer,
-    MDDialogContentContainer,
-)
+from kivymd.uix.dialog import *
 from kivymd.uix.button import MDButton, MDButtonText, MDIconButton
 from kivy.uix.widget import Widget
-# from kivymd.tools.hotreload.app import MDApp
+from kivymd.uix.segmentedbutton import *
+from kivymd.uix.label import MDLabel
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivy import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.config import Config
-# Config.set('kivy', 'keyboard_mode', 'systemanddock')
 from kivy.core.audio import SoundLoader
-
 from oscpy.client import OSCClient
 from oscpy.server import OSCThreadServer
+# from kivy.config import Config
+# from kivymd.tools.hotreload.app import MDApp
+# Config.set('kivy', 'keyboard_mode', 'systemanddock')
 
 class MainApp(MDApp):
 
-    def check_medical_appointments(self, *args):
-        print("iam in")
-        now = datetime.now()
-        current_time = now.replace(second=0).strftime("%H:%M:%S")
-        current_date = now.strftime("%Y-%m-%d")
-        for med in self.my_global_medical_list:
-            if med["Time"] == current_time and med["Date"] == current_date :
-                notification.notify(
-                    title="Medication Reminder",
-                    message=f"Don't forget to take your {med['Name']}!",
-                    # app_icon=None, 
-                    timeout=5, 
-                    # toast=False,  
-                )
-                print("notification sent")
-                sound = SoundLoader.load('alarm.wav')
-                if sound:
-                    print(f"Sound found at {sound.source}")
-                    print(f"Sound length at {sound.length}")
-                    sound.play()
-
-####################### Helper Functions ############################
-
+####################### Helper Functions #########################
     def arabic_font(self, text):
         reshaped_text = arabic_reshaper.reshape(text)
         bidi_text = bidi.algorithm.get_display(reshaped_text)
@@ -78,25 +43,33 @@ class MainApp(MDApp):
 
         self.set_bars_colors()
 
-    def andoid_start_service(name,other_arg):  
-        from android import mActivity  
-        from jnius import autoclass  
-        context = mActivity.getApplicationContext()  
-        service_name = "org.bill.remindme" + ".Service" + "Pong"  
-        service = autoclass(service_name)  
-        service.start(mActivity, '')  # starts or re-initializes a service  
+    def set_bars_colors(self):
+        set_bars_colors(
+            self.theme_cls.backgroundColor,
+            self.theme_cls.surfaceContainerColor,
+            "Light" if self.style_state == "Dark" else "Light"
+        )
+####################### Helper Functions #########################
+
+####################### Android Service ##########################
+    def andoid_start_service(name, other_arg):
+        from android import mActivity
+        from jnius import autoclass
+        context = mActivity.getApplicationContext()
+        service_name = "org.pill.remindme" + ".Service" + "Reminder"
+        service = autoclass(service_name)
+        service.start(mActivity, '')  # starts or re-initializes a service
         return service
+####################### Android Service ##########################
 
-####################### Helper Functions ############################
-
-####################### Build App Function ############################
+####################### Build App Function #######################
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
         self.stored_data = JsonStore('data.json')
         Clock.schedule_once(lambda *args: self.load())
-        
+
     def load(self):
-        self.icon_instance =""
+        self.icon_instance = ""
         try:
             self.style_state = self.stored_data.get('style')[
                 'List2']
@@ -117,7 +90,7 @@ class MainApp(MDApp):
         self.medical_name = None
         self.my_global_medical_list = []
         self.theme_cls.theme_style = self.style_state
-        
+
         self.theme_cls.update_theme_colors()
         self.set_bars_colors()
 
@@ -143,54 +116,140 @@ class MainApp(MDApp):
                 x = self.KV.ids.list.add_widget(
                     MDList(
                         MDCard(
-                            MDTextField(
-                                MDTextFieldHintText(
-                                    id=str(med["Id"]),
-                                    text="medicament name",
-                                    halign="left",
+                            MDLabel(
+                                text="Repeat Every",
+                                bold=True,
+                                pos_hint={"center_y": 0.5},
+                                halign="center",
+                            ),
+                            MDSegmentedButton(
+                                MDSegmentedButtonItem(
+                                    MDSegmentButtonLabel(
+                                        text="Day",
+                                    ),
+                                    id = str(med["Id"]),
+                                    on_release = self.segment_on_active,
+                                    active= True if "Day" in med["Repeated_List"] else False
                                 ),
-                                theme_line_color="Custom",
-                                line_color_focus=(0, 1, 0, 0),
-                                line_color_normal=(0, 1, 0, 0),
-                                text=med["Name"],
-                                width="240dp",
+                                MDSegmentedButtonItem(
+                                    MDSegmentButtonLabel(
+                                        text="Sat",
+                                    ),
+                                    id = str(med["Id"]),
+                                    on_release = self.segment_on_active,
+                                    active= True if "Sat" in med["Repeated_List"] else False
+                                ),
+                                MDSegmentedButtonItem(
+                                    MDSegmentButtonLabel(
+                                        text="Sun",
+                                    ),
+                                    id = str(med["Id"]),
+                                    on_release = self.segment_on_active,
+                                    active= True if "Sun" in med["Repeated_List"] else False
+                                ),
+                                MDSegmentedButtonItem(
+                                    MDSegmentButtonLabel(
+                                        text="Mon",
+                                    ),
+                                    id = str(med["Id"]),
+                                    on_release = self.segment_on_active,
+                                    active= True if "Mon" in med["Repeated_List"] else False
+                                ),
                                 id=str(med["Id"]),
-                                mode="outlined",
-                                role="medium",
-                                font_style="Headline",
-                                halign="left",
-                                padding=(10, 0, 0, 0),
-                                required=True
+                                type="small",
+                                pos_hint={"center_y": 0.5},
+                                padding=(10, 0, 10, 0),
+                                multiselect=True
                             ),
-                            MDIconButton(
-                                style="standard",
-                                icon="clock",
+                            MDSegmentedButton(
+                                MDSegmentedButtonItem(
+                                    MDSegmentButtonLabel(
+                                        text="Tue",
+                                    ),
+                                    id = str(med["Id"]),
+                                    on_release = self.segment_on_active,
+                                    active= True if "Tue" in med["Repeated_List"] else False
+                                ),
+                                MDSegmentedButtonItem(
+                                    MDSegmentButtonLabel(
+                                        text="Wed",
+                                    ),
+                                    id = str(med["Id"]),
+                                    on_release = self.segment_on_active,
+                                    active= True if "Wed" in med["Repeated_List"] else False
+                                ),
+                                MDSegmentedButtonItem(
+                                    MDSegmentButtonLabel(
+                                        text="Thu",
+                                    ),
+                                    id = str(med["Id"]),
+                                    on_release = self.segment_on_active,
+                                    active= True if "Thu" in med["Repeated_List"] else False
+                                ),
+                                MDSegmentedButtonItem(
+                                    MDSegmentButtonLabel(
+                                        text="Fri",
+                                    ),
+                                    id = str(med["Id"]),
+                                    on_release = self.segment_on_active,
+                                    active= True if "Fri" in med["Repeated_List"] else False
+                                ),
                                 id=str(med["Id"]),
-                                on_press=self.show_time_picker
+                                type="small",
+                                pos_hint={"center_y": 0.5},
+                                padding=(10, 0, 10, 0),
+                                multiselect=True
                             ),
-                            MDIconButton(
-                                style="standard",
-                                icon="calendar",
-                                id=str(med["Id"]),
-                                on_press=self.show_date_picker
-                            ),
-                            MDIconButton(
-                                style="standard",
-                                icon="palette",
-                                id=str(med["Id"]),
-                                opacity=1.0,
-                                disabled=False,
-                                theme_text_color="Custom",
-                                text_color=med["Color"],
-                                on_press=self.open_menu
-                            ),
-                            MDIconButton(
-                                id=str(med["Id"]),
-                                icon="delete",
-                                style="standard",
-                                theme_text_color="Custom",
-                                text_color="FF5C77",
-                                on_press=self.Delete_Medicine,
+                            MDBoxLayout(
+                                MDTextField(
+                                    MDTextFieldHintText(
+                                        id=str(med["Id"]),
+                                        text="medicament name",
+                                        halign="left",
+                                    ),
+                                    theme_line_color="Custom",
+                                    line_color_focus=(0, 1, 0, 0),
+                                    line_color_normal=(0, 1, 0, 0),
+                                    text=med["Name"],
+                                    width="240dp",
+                                    id=str(med["Id"]),
+                                    mode="outlined",
+                                    role="medium",
+                                    font_style="Headline",
+                                    halign="left",
+                                    padding=(10, 0, 0, 0),
+                                    required=True
+                                ),
+                                MDIconButton(
+                                    style="standard",
+                                    icon="palette",
+                                    id=str(med["Id"]),
+                                    opacity=1.0,
+                                    disabled=False,
+                                    theme_text_color="Custom",
+                                    text_color=med["Color"],
+                                    on_press=self.open_menu
+                                ),
+                                MDIconButton(
+                                    style="standard",
+                                    icon="clock",
+                                    id=str(med["Id"]),
+                                    on_press=self.show_time_picker
+                                ),
+                                MDIconButton(
+                                    style="standard",
+                                    icon="calendar",
+                                    id=str(med["Id"]),
+                                    on_press=self.show_date_picker
+                                ),
+                                MDIconButton(
+                                    id=str(med["Id"]),
+                                    icon="delete",
+                                    style="standard",
+                                    theme_text_color="Custom",
+                                    text_color="FF5C77",
+                                    on_press=self.Delete_Medicine,
+                                )
                             ),
                             style="elevated",
                             id=str(med["Id"]),
@@ -200,12 +259,16 @@ class MainApp(MDApp):
                             shadow_softness=15,
                             theme_elevation_level="Custom",
                             elevation_level=2,
-                            spacing="10dp",
-                            size=(1, 250),
+                            size=(1, 550),
                             padding=(10, 10, 10, 10),
-                        )))
+                            orientation='vertical',
+                        )
+                    )
+                )
+                # self.KV.ids.list.get_ids()[str(med["Id"])].children[-1].bind(text=self.on_focus)
                 self.KV.ids.list.get_ids()[str(
-                    med["Id"])].children[-1].bind(text=self.on_focus)
+                    med["Id"])].children[0].children[-1].bind(text=self.on_focus)
+
         except:
             self.id = 0
 
@@ -214,24 +277,62 @@ class MainApp(MDApp):
             'stored_medicals', List=self.my_global_medical_list)
         self.stored_data.put(
             'style', List2=self.style_state)
+        self.stored_data.put(
+            'App_color', List3=self.app_color)
 
     def build(self):
 
         try:
             self.style_state = self.stored_data.get('style')[
                 'List2']
+            self.app_color = self.stored_data.get('App_color')[
+                'List3']
         except:
             self.style_state = "Dark"
+            self.app_color = "Royalblue"
+
         self.theme_cls.theme_style_switch_animation = True
         self.theme_cls.theme_style_switch_animation_duration = 0.5
         self.theme_cls.theme_style = self.style_state
-        self.theme_cls.primary_palette = "Aliceblue"
+        self.theme_cls.primary_palette = self.app_color
         self.KV = Builder.load_file("kivy.kv")
         return self.KV
-####################### Build App Function ############################
-    def display_message(self, message):
-        print("message")
 
+    def Change_app_color(self, instance=None):
+        self.menu_items = [
+            {"text": "Default",
+                "on_release": lambda x=f"Royalblue": self.Change_app_color_callback(x)},
+            {"text": "Violet",
+                "on_release": lambda x=f"Violet": self.Change_app_color_callback(x)},
+            {"text": "Blue",
+                "on_release": lambda x=f"Blue": self.Change_app_color_callback(x)},
+            {"text": "Red",
+                "on_release": lambda x=f"Red": self.Change_app_color_callback(x)},
+            {"text": "Pink",
+                "on_release": lambda x=f"Pink": self.Change_app_color_callback(x)},
+            {"text": "Green",
+                "on_release": lambda x=f"Green": self.Change_app_color_callback(x)},
+            {"text": "Yellow",
+                "on_release": lambda x=f"Yellow": self.Change_app_color_callback(x)},
+            {"text": "Orange",
+                "on_release": lambda x=f"Orange": self.Change_app_color_callback(x)},
+        ]
+
+        self.menu = MDDropdownMenu(
+            caller=self.KV.ids.Change_app_color,
+            items=self.menu_items)
+        self.menu.open()
+
+    def Change_app_color_callback(self, text_item):
+        self.app_color = text_item
+        self.theme_cls.primary_palette = self.app_color
+        self.theme_cls.update_theme_colors()
+        self.save()
+        self.menu.dismiss()
+        self.set_bars_colors()
+####################### Build App Function #######################
+
+####################### Events Function ##########################
     def on_focus(self, instance, text):
         x = instance.get_ids().keys()
         temp_id = instance.children[0].id
@@ -245,12 +346,7 @@ class MainApp(MDApp):
                 print("="*20)
                 break
 
-        # print(instance.get_ids()[-4])
-####################### Events Function ############################
-
     def on_start(self):
-        Clock.schedule_interval(self.check_medical_appointments, 60)
-
         def callback(permission, results):
             if all([res for res in results]):
                 Clock.schedule_once(self.set_dynamic_color)
@@ -261,37 +357,28 @@ class MainApp(MDApp):
             permissions = [Permission.READ_EXTERNAL_STORAGE]
             request_permissions(permissions, callback)
 
-            self.service = self.andoid_start_service('Pong')
-            print(f'started android service. {self.service}')  
+            self.service = self.andoid_start_service('Reminder')
+            print(f'started android service. {self.service}')
 
-        elif platform in ('linux', 'linux2', 'macos', 'win'):  
-                from runpy import run_path  
-                from threading import Thread  
-                self.service = Thread(  
-                    target=run_path,  
-                    args=['./service.py'],  
-                    kwargs={'run_name': '__main__'},  
-                    daemon=True  
-                )  
-                self.service.start()  
-        
-        else:  
-            raise NotImplementedError(  
-                "service start not implemented on this platform"  
+        elif platform in ('linux', 'linux2', 'macos', 'win'):
+            from runpy import run_path
+            from threading import Thread
+            self.service = Thread(
+                target=run_path,
+                args=['./service.py'],
+                kwargs={'run_name': '__main__'},
+                daemon=True
             )
+            self.service.start()
 
-    def set_bars_colors(self):
-        set_bars_colors(
-            self.theme_cls.backgroundColor,
-            self.theme_cls.backgroundColor,
-            "Light" if self.style_state == "Dark" else "Light"
-        )
-
-####################### Events Function ############################
+        else:
+            raise NotImplementedError(
+                "service start not implemented on this platform"
+            )
+####################### Events Function ##########################
 
 
-####################### Info Dialog ############################
-
+####################### Info Dialog ##############################
     def info_dialog(self):
         self.InfoDialog = MDDialog(
             MDDialogIcon(
@@ -336,11 +423,11 @@ class MainApp(MDApp):
             MDDialogButtonContainer(
                 Widget(),
                 MDIconButton(
-                        style="standard",
-                        theme_text_color="Custom",
-                        icon="bug",
-                        on_press=self.bug_report_link
-                    ),
+                    style="standard",
+                    theme_text_color="Custom",
+                    icon="bug",
+                    on_press=self.bug_report_link
+                ),
                 MDButton(
                     MDButtonText(text="Ok"),
                     style="text",
@@ -364,10 +451,32 @@ class MainApp(MDApp):
 
     def bug_report_link(self, *arg):
         webbrowser.open("https://forms.gle/kcvaGvwxjow2mRS37")
-####################### Info Dialog ############################
+####################### Info Dialog ##############################
 
 
-####################### medicine_info_dialog ############################
+####################### medicine_info_dialog #####################
+    def segment_on_active(self,instance):
+        seg_text = instance.children[0].children[0].text
+
+        if len(self.my_global_medical_list) != 0:
+            for med in self.my_global_medical_list:
+                if med["Id"] == int(instance.id) and  seg_text not in med["Repeated_List"] :
+                    med["Repeated_List"].append(seg_text)
+                    self.save()
+                    print("="*20)
+                    print(f"'Card id = {instance.id}' ")
+                    print(f"'{seg_text}' added  fromlist = {med['Repeated_List']}")
+                    print("="*20)
+                    break
+
+                elif med["Id"] == int(instance.id) and  seg_text in med["Repeated_List"] :
+                    med["Repeated_List"].remove(seg_text)
+                    self.save()
+                    print("="*20)
+                    print(f"'Card id = {instance.id}' ")
+                    print(f"'{seg_text}' removed from list = {med['Repeated_List']}")
+                    print("="*20)
+                    break
 
     def medicine_info_dialog(self):
         self.icon_instance = ""
@@ -417,7 +526,7 @@ class MainApp(MDApp):
         self.menu_items = [
             {"text": "White", "on_release": lambda x=f"ffffff": menu_callback_add(
                 x)},
-            {"text": "Blue", "on_release": lambda x=f"A6E0FF": menu_callback_add(
+            {"text": "Cyan", "on_release": lambda x=f"A6E0FF": menu_callback_add(
                 x)},
             {"text": "Red", "on_release": lambda x=f"FF5C77": menu_callback_add(
                 x)},
@@ -452,7 +561,7 @@ class MainApp(MDApp):
                     icon="palette",
                 ),
                 MDDialogHeadlineText(
-                    text="Chooce Bill Color",
+                    text="Chooce Pill Color",
                     font_style="Title",
                     role='medium',
                     bold=True
@@ -551,56 +660,135 @@ class MainApp(MDApp):
         self.KV.ids.list.add_widget(
             MDList(
                 MDCard(
-                    MDTextField(
-                        MDTextFieldHintText(
-                            id=str(self.id),
-                            text="medicament name",
-                            halign="left",
-                        ),
-                        theme_line_color="Custom",
-                        line_color_focus=(0, 1, 0, 0),
-                        line_color_normal=(0, 1, 0, 0),
-                        text=self.dia2.get_ids()["medical_name"].text,
-                        width="240dp",
-                        mode="outlined",
-                        role="medium",
-                        font_style="Headline",
-                        halign="left",
+                    MDLabel(
+                        text="Repeat Every",
                         bold=True,
-                        padding=(10, 0, 0, 0),
-                        required=True,
-                        id=f"{self.id}",
-
+                        pos_hint={"center_y": 0.5},
+                        halign="center",
                     ),
-                    MDIconButton(
-                        style="standard",
-                        icon="palette",
-                        id=f"{self.id}",
-                        opacity=1.0,
-                        disabled=False,
-                        theme_text_color="Custom",
-                        text_color=self.color,
-                        on_press=self.open_menu
+                    MDSegmentedButton(
+                        MDSegmentedButtonItem(
+                            MDSegmentButtonLabel(
+                                text="Day",
+                            ),
+                            active= True,
+                            id = str(self.id),
+                            on_release = self.segment_on_active,
+                        ),
+                        MDSegmentedButtonItem(
+                            MDSegmentButtonLabel(
+                                text="Sat",
+                            ),
+                            id = str(self.id),
+                            on_release = self.segment_on_active
+                        ),
+                        MDSegmentedButtonItem(
+                            MDSegmentButtonLabel(
+                                text="Sun",
+                            ),
+                            id = str(self.id),
+                            on_release = self.segment_on_active
+                        ),
+                        MDSegmentedButtonItem(
+                            MDSegmentButtonLabel(
+                                text="Mon",
+                            ),
+                            id = str(self.id),
+                            on_release = self.segment_on_active
+                        ),
+                        
+                        id=str(self.id),
+                        type="small",
+                        pos_hint={"center_y": 0.5},
+                        padding=(10, 0, 10, 0),
+                        multiselect=True,
                     ),
-                    MDIconButton(
-                        style="standard",
-                        id=f"{self.id}",
-                        icon="clock",
-                        on_press=self.show_time_picker
+                    MDSegmentedButton(
+                        
+                        MDSegmentedButtonItem(
+                            MDSegmentButtonLabel(
+                                text="Tue",
+                            ),
+                            id = str(self.id),
+                            on_release = self.segment_on_active
+                        ),
+                        MDSegmentedButtonItem(
+                            MDSegmentButtonLabel(
+                                text="Wed",
+                            ),
+                            id = str(self.id),
+                            on_release = self.segment_on_active
+                        ),
+                        MDSegmentedButtonItem(
+                            MDSegmentButtonLabel(
+                                text="Thu",
+                            ),
+                            id = str(self.id),
+                            on_release = self.segment_on_active
+                        ),
+                        MDSegmentedButtonItem(
+                            MDSegmentButtonLabel(
+                                text="Fri",
+                            ),
+                            id = str(self.id),
+                            on_release = self.segment_on_active
+                        ),
+                        id=str(self.id),
+                        type="small",
+                        pos_hint={"center_y": 0.5},
+                        padding=(10, 0, 10, 0),
+                        multiselect=True,
                     ),
-                    MDIconButton(
-                        style="standard",
-                        icon="calendar",
-                        id=f"{self.id}",
-                        on_press=self.show_date_picker
-                    ),
-                    MDIconButton(
-                        id=f"{self.id}",
-                        icon="delete",
-                        style="standard",
-                        theme_text_color="Custom",
-                        text_color="FF5C77",
-                        on_press=self.Delete_Medicine,
+                    MDBoxLayout(
+                        MDTextField(
+                            MDTextFieldHintText(
+                                id=str(self.id),
+                                text="medicament name",
+                                halign="left",
+                            ),
+                            theme_line_color="Custom",
+                            line_color_focus=(0, 1, 0, 0),
+                            line_color_normal=(0, 1, 0, 0),
+                            text=self.dia2.get_ids()["medical_name"].text,
+                            width="240dp",
+                            mode="outlined",
+                            role="medium",
+                            font_style="Headline",
+                            halign="left",
+                            bold=True,
+                            required=True,
+                            id=f"{self.id}",
+                        ),
+                        MDIconButton(
+                            style="standard",
+                            icon="palette",
+                            id=f"{self.id}",
+                            opacity=1.0,
+                            disabled=False,
+                            theme_text_color="Custom",
+                            text_color=self.color,
+                            on_press=self.open_menu,
+                        ),
+                        MDIconButton(
+                            style="standard",
+                            id=f"{self.id}",
+                            icon="clock",
+                            on_press=self.show_time_picker,
+                        ),
+                        MDIconButton(
+                            style="standard",
+                            icon="calendar",
+                            id=f"{self.id}",
+                            on_press=self.show_date_picker
+                        ),
+                        MDIconButton(
+                            id=f"{self.id}",
+                            icon="delete",
+                            style="standard",
+                            theme_text_color="Custom",
+                            text_color="FF5C77",
+                            on_press=self.Delete_Medicine,
+                        )
                     ),
                     id=f"CardNum{self.id}",
                     style="elevated",
@@ -610,19 +798,22 @@ class MainApp(MDApp):
                     shadow_softness=15,
                     theme_elevation_level="Custom",
                     elevation_level=2,
-                    spacing="10dp",
-                    size=(1, 350),
+                    size=(1, 550),
+                    orientation='vertical',
                     padding=(10, 10, 10, 10),
-
-                ))
+                )
+            )
         )
+
         print("="*20)
         ax = f"CardNum{self.id}"
         print(ax)
         print(self.KV.ids.list.get_ids())
         print("="*20)
-        print(self.KV.ids.list.get_ids()[ax].children[-1])
-        self.KV.ids.list.get_ids()[ax].children[-1].bind(text=self.on_focus)
+        print(self.KV.ids.list.get_ids()[ax].children[0].children[-1])
+        # self.KV.ids.list.get_ids()[ax].children[-1].bind(text=self.on_focus)
+        self.KV.ids.list.get_ids(
+        )[ax].children[0].children[-1].bind(text=self.on_focus)
 
         print("="*20)
         print(self.id)
@@ -636,13 +827,9 @@ class MainApp(MDApp):
         my_med_dict["Time"] = self.time
         my_med_dict["Date"] = self.date
         my_med_dict["Color"] = self.color
+        my_med_dict["Repeated_List"] = ["Day"]
 
         self.my_global_medical_list.append(my_med_dict)
-        notification.notify(
-            title="Card Added ",
-            message=" card added successfully",
-            timeout=2
-        )
 
         self.save()
         print("="*20)
@@ -658,7 +845,7 @@ class MainApp(MDApp):
 
     def Delete_Medicine(self, instance=None):
         if instance:
-            self.KV.ids.list.remove_widget(instance.parent.parent)
+            self.KV.ids.list.remove_widget(instance.parent.parent.parent)
             for med in self.my_global_medical_list:
                 if med["Id"] == int(instance.id):
                     print("="*20)
@@ -678,7 +865,7 @@ class MainApp(MDApp):
         self.menu_items = [
             {"text": "White", "on_release": lambda x=f"ffffff": self.menu_callback(
                 x, instance)},
-            {"text": "Blue", "on_release": lambda x=f"A6E0FF": self.menu_callback(
+            {"text": "Cyan", "on_release": lambda x=f"A6E0FF": self.menu_callback(
                 x, instance)},
             {"text": "Red", "on_release": lambda x=f"FF5C77": self.menu_callback(
                 x, instance)},
@@ -708,7 +895,7 @@ class MainApp(MDApp):
 
         self.color = text_item
         self.menu.dismiss()
-####################### medicine_info_dialog ############################
+####################### medicine_info_dialog ####################
 
 
 ####################### Timer Picker ############################
@@ -772,7 +959,6 @@ class MainApp(MDApp):
         self.date_dialog.bind(on_cancel=self.Date_on_cancel)
 
         if len(self.my_global_medical_list) != 0:
-
             for med in self.my_global_medical_list:
                 if med["Id"] == int(self.date_dialog.headline_text):
                     new_date = datetime.strptime(med["Date"], "%Y-%m-%d")
@@ -820,7 +1006,7 @@ class MainApp(MDApp):
 ####################### Date  Picker ############################
 
 
-####################### Main ############################
+####################### Main ####################################
 if __name__ == "__main__":
     MainApp().run()
-####################### Main ############################
+####################### Main ####################################

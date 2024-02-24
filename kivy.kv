@@ -4,9 +4,6 @@
 MDBoxLayout:
     orientation: 'vertical'
     md_bg_color: self.theme_cls.backgroundColor
-
-    
-
     MDTopAppBar:
         elevation:1
         type: "small"
@@ -16,7 +13,7 @@ MDBoxLayout:
                 on_release: app.switch_theme_style()
 
         MDTopAppBarTitle:
-            text: "Remind Me App"
+            text: "Pill Reminder"
             font_style: "Headline"
             role: "large"
             bold:True
@@ -25,7 +22,7 @@ MDBoxLayout:
         MDTopAppBarTrailingButtonContainer:
             MDActionTopAppBarButton:
                 icon: "account-circle-outline"
-                on_release: app.info_dialog()
+                on_release: app.info_dialog()                    
 
     MDBoxLayout:
         orientation: 'vertical'
@@ -42,8 +39,9 @@ MDBoxLayout:
             icon:"plus"
             name : 'screen2'
             on_release:app.medicine_info_dialog()
-
             max_text_length: 10
-    # MDTextField:
-    #     text: "500"
-    #     on_text: app.on_focus(self.text)
+
+        MDActionBottomAppBarButton:
+            icon: "palette"
+            id : Change_app_color
+            on_release : app.Change_app_color()

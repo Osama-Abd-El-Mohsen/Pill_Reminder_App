@@ -1,19 +1,19 @@
 [app]
 
 # (str) Title of your application
-title = Bill Reminder
+title = Pill Reminder
 
 # (str) Package name
 package.name = remindme
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.bill
+package.domain = org.pill
 
 # (str) Source code where the main.py live
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,ttf,json,wav
+source.include_exts = py,png,jpg,kv,atlas,ttf,json,wav,ico
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
@@ -29,7 +29,7 @@ source.include_exts = py,png,jpg,kv,atlas,ttf,json,wav
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 3.1
+version = 1.50
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -37,7 +37,7 @@ version = 3.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3, kivy==2.3.0, https://github.com/kivymd/KivyMD/archive/master.zip, materialyoucolor, exceptiongroup, asyncgui, asynckivy, Pillow,python-bidi,arabic_reshaper,plyer,oscpy
+requirements = python3, kivy==2.3.0, https://github.com/kivymd/KivyMD/archive/master.zip, materialyoucolor, exceptiongroup, asyncgui, asynckivy, Pillow,python-bidi,arabic_reshaper,plyer==2.0.0,oscpy 
 
 
 # (str) Custom source folders for requirements
@@ -45,10 +45,11 @@ requirements = python3, kivy==2.3.0, https://github.com/kivymd/KivyMD/archive/ma
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-#presplash.filename = %(source.dir)s/app_splash.png
+# presplash.filename = %(source.dir)s/app_splash.png
+presplash.filename = Assets/logo.png
 
 # (str) Icon of the application
-#icon.filename = %(source.dir)s/app_icon.png
+icon.filename = Assets/icon.png
 
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse
@@ -56,8 +57,7 @@ orientation = portrait
 
 # (list) List of service to declare
 #services = NAME:ENTRYPOINT_TO_PY,NAME2:ENTRYPOINT2_TO_PY
-services = Pong:service.py:foreground:sticky
-# services = Pong:service.py
+services = Reminder:service.py:foreground:sticky
 
 #
 # OSX Specific
@@ -84,7 +84,7 @@ fullscreen = 0
 # red, blue, green, black, white, gray, cyan, magenta, yellow, lightgray,
 # darkgray, grey, lightgrey, darkgrey, aqua, fuchsia, lime, maroon, navy,
 # olive, purple, silver, teal.
-#android.presplash_color = #FFFFFF
+android.presplash_color = #1A1B21
 
 # (string) Presplash animation using Lottie format.
 # see https://lottiefiles.com/ for examples and https://airbnb.design/lottie/
@@ -93,8 +93,8 @@ fullscreen = 0
 #android.presplash_lottie = "path/to/lottie/file.json"
 
 # (str) Adaptive icon of the application (used if Android API level is 26+ at runtime)
-#icon.adaptive_foreground.filename = %(source.dir)s/data/icon_fg.png
-#icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
+# icon.adaptive_foreground.filename = Assets/icon.png
+# icon.adaptive_background.filename = Assets/icon.png
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
@@ -105,10 +105,10 @@ android.permissions = INTERNET,READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,ACC
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-android.api = 30
+# android.api = 30
 
 # (int) Minimum API your APK / AAB will support.
-#android.minapi = 21
+# android.minapi = 21
 
 # (int) Android SDK version to use
 #android.sdk = 20
@@ -198,19 +198,19 @@ android.accept_sdk_license = True
 # 1) A file to add to resources, legal resource names contain ['a-z','0-9','_']
 # android.add_resources = my_icons/all-inclusive.png:drawable/all_inclusive.png
 # 2) A directory, here  'legal_icons' must contain resources of one kind
-# android.add_resources = legal_icons:drawable
+android.add_resources = data/legal_icons:drawable
 # 3) A directory, here 'legal_resources' must contain one or more directories, 
 # each of a resource kind:  drawable, xml, etc...
 # android.add_resources = legal_resources
 #android.add_resources =
 
 # (list) Gradle dependencies to add
-#android.gradle_dependencies =
+# android.gradle_dependencies =  androidx.appcompat:appcompat:1.4.2 
 
 # (bool) Enable AndroidX support. Enable when 'android.gradle_dependencies'
 # contains an 'androidx' package, or any package from Kotlin source.
 # android.enable_androidx requires android.api >= 28
-#android.enable_androidx = True
+# android.enable_androidx = True
 
 # (list) add java compile options
 # this can for example be necessary when importing certain java libraries using the 'android.gradle_dependencies' option
@@ -220,7 +220,7 @@ android.accept_sdk_license = True
 # (list) Gradle repositories to add {can be necessary for some android.gradle_dependencies}
 # please enclose in double quotes 
 # e.g. android.gradle_repositories = "maven { url 'https://kotlin.bintray.com/ktor' }"
-#android.add_gradle_repositories =
+# android.add_gradle_repositories = "androidx.appcompat:appcompat:1.4.2"
 
 # (list) packaging options to add 
 # see https://google.github.io/android-gradle-dsl/current/com.android.build.gradle.internal.dsl.PackagingOptions.html
@@ -287,7 +287,8 @@ android.accept_sdk_license = True
 
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
-android.archs = arm64-v8a, armeabi-v7a
+# android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
@@ -340,7 +341,7 @@ p4a.local_recipes = ./p4a-recipes
 #p4a.hook =
 
 # (str) Bootstrap to use for android builds
-p4a.bootstrap = sdl2
+# p4a.bootstrap = sdl2
 
 # (int) port number to specify an explicit --port= p4a argument (eg for bootstrap flask)
 #p4a.port =
