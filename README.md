@@ -2,7 +2,9 @@
 
 ![alt text](Assets/fourm-10.png)
 
-
+# Download 
+[Download here](https://github.com/Osama-Abd-El-Mohsen/Pill_Reminder_App/releases/tag/V1.0)
+-----------
 a convenient and easy-to-use Android application designed to help you manage your medication schedule effectively. you can set up reminders for taking your pills, ensuring you never miss a dose again. Whether you're managing multiple medications or simply need a little nudge to stay on track, PillPal has you covered.
 
 ## Features
