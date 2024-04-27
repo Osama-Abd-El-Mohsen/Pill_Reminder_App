@@ -29,7 +29,7 @@ source.include_exts = py,png,jpg,kv,atlas,ttf,json,wav,ico
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 1.50
+version = 2.1
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -98,14 +98,13 @@ android.presplash_color = #1A1B21
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
-android.permissions = INTERNET,READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,ACCESS_NETWORK_STATE,FOREGROUND_SERVICE
+android.permissions = INTERNET ,READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,FOREGROUND_SERVICE,POST_NOTIFICATIONS
 #android.permissions = INTERNET,ACCESS_NETWORK_STATE,android.permission.INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,(name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=18) 
-
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-# android.api = 30
+android.api = 34
 
 # (int) Minimum API your APK / AAB will support.
 # android.minapi = 21
@@ -288,7 +287,7 @@ android.add_resources = data/legal_icons:drawable
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
 # android.archs = arm64-v8a, armeabi-v7a
-android.archs = arm64-v8a
+android.archs = arm64-v8a, armeabi-v7a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
@@ -311,6 +310,7 @@ android.allow_backup = True
 
 # (str) The format used to package the app for release mode (aab or apk or aar).
 # android.release_artifact = aab
+android.release_artifact = aab
 
 # (str) The format used to package the app for debug mode (apk or aar).
 # android.debug_artifact = apk
@@ -326,7 +326,8 @@ android.allow_backup = True
 #p4a.fork = kivy
 
 # (str) python-for-android branch to use, defaults to master
-#p4a.branch = master
+# p4a.branch = master
+p4a.branch = develop
 
 # (str) python-for-android specific commit to use, defaults to HEAD, must be within p4a.branch
 #p4a.commit = HEAD

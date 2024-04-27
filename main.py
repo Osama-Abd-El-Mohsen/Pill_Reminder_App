@@ -354,7 +354,7 @@ class MainApp(MDApp):
 
         if platform == "android":
             from android.permissions import Permission, request_permissions
-            permissions = [Permission.READ_EXTERNAL_STORAGE]
+            permissions = [Permission.POST_NOTIFICATIONS , Permission.READ_EXTERNAL_STORAGE,Permission.WRITE_EXTERNAL_STORAGE,Permission.FOREGROUND_SERVICE]
             request_permissions(permissions, callback)
 
             self.service = self.andoid_start_service('Reminder')
