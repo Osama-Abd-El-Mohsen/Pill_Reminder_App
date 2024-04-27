@@ -4,9 +4,9 @@
 
 # Download 
 
-<p  align="center" href="https://play.google.com/store/apps/details?id=org.pill.remindme&pli=1">
-    <img src="https://tinyurl.com/2y4xgk5q" alt="Download Image" height="100" border="0" />
-</p>
+<a  align="center"  href="https://play.google.com/store/apps/details?id=org.pill.remindme&pli=1">
+    <img  src="https://tinyurl.com/2y4xgk5q" alt="Download Image" height="90" border="0" />
+</a>
 
 
 
