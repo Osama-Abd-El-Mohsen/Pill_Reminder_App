@@ -3,9 +3,9 @@
 ![alt text](Assets/fourm-10.png)
 
 # Download 
-<h1 href="https://play.google.com/store/apps/details?id=org.pill.remindme&pli=1">
+<a href="https://play.google.com/store/apps/details?id=org.pill.remindme&pli=1">
     <img src="https://imgtr.ee/images/2024/04/27/3d898f96933251d19084a0c9ce5f7711.png" alt="Download Image"  height="150" border="0" />
-</h1>
+</a>
 
 
 
