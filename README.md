@@ -2,13 +2,6 @@
 
 ![alt text](Assets/fourm-10.png)
 
-# Download 
-
-<a  align="center"  href="https://play.google.com/store/apps/details?id=org.pill.remindme&pli=1">
-    <img  src="https://tinyurl.com/2y4xgk5q" alt="Download Image" height="90" border="0" />
-</a>
-
-
 
 -----------
 a convenient and easy-to-use Android application designed to help you manage your medication schedule effectively. you can set up reminders for taking your pills, ensuring you never miss a dose again. Whether you're managing multiple medications or simply need a little nudge to stay on track, PillPal has you covered.
@@ -20,9 +13,13 @@ a convenient and easy-to-use Android application designed to help you manage you
 - **User-Friendly Interface:** user-friendly interface, making it easy for users of all ages to manage their medication schedules.
 
 
-## Installation
+## Installation & Download
 
-   you can download the APK file from my GitHub repository
+   you can download the APK file from my play store here 
+   
+   <a  align="center"  href="https://play.google.com/store/apps/details?id=org.pill.remindme&pli=1">
+    <img  src="https://tinyurl.com/2y4xgk5q" alt="Download Image" height="90" border="0" />
+</a>
 
 ## Usage
 
